@@ -20,7 +20,6 @@
 ## 4. 뉴스 소스 (RSS)
 - TechCrunch AI: `https://techcrunch.com/category/artificial-intelligence/feed/`
 - The Verge AI: `https://www.theverge.com/rss/ai-artificial-intelligence/index.xml`
-- VentureBeat AI: `https://venturebeat.com/category/ai`
 
 ## 5. 핵심 기능
 
