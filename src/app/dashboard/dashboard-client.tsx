@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { articles as articlesTable, categories as categoriesTable } from "@/db/schema";
 
 type Category = typeof categoriesTable.$inferSelect;
@@ -25,7 +26,26 @@ export function DashboardClient({
   articles: Article[];
   categories: Category[];
 }) {
+  const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all">("all");
+  const [isFetching, setIsFetching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  async function handleFetchNews() {
+    setIsFetching(true);
+    setFetchError(null);
+    try {
+      const res = await fetch("/api/news/fetch", { method: "POST" });
+      if (!res.ok) {
+        throw new Error("뉴스 가져오기에 실패했습니다.");
+      }
+      router.refresh();
+    } catch (err) {
+      setFetchError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setIsFetching(false);
+    }
+  }
 
   const filteredArticles = useMemo(() => {
     if (selectedCategoryId === "all") return articles;
@@ -38,12 +58,17 @@ export function DashboardClient({
         {/* 헤더 */}
         <header className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4">
           <h1 className="text-xl font-semibold text-foreground">AI 뉴스 수집기</h1>
-          <button
-            type="button"
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            뉴스 가져오기
-          </button>
+          <div className="flex items-center gap-3">
+            {fetchError && <span className="text-sm text-red-600">{fetchError}</span>}
+            <button
+              type="button"
+              onClick={handleFetchNews}
+              disabled={isFetching}
+              className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isFetching ? "가져오는 중..." : "뉴스 가져오기"}
+            </button>
+          </div>
         </header>
 
         {/* 카테고리 바 */}
