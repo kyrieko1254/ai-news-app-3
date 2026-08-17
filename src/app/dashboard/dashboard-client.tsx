@@ -135,10 +135,30 @@ export function DashboardClient({
 }
 
 function ArticleCard({ article }: { article: Article }) {
+  const router = useRouter();
   const [notionMessage, setNotionMessage] = useState<string | null>(null);
+  const [isSavingToNotion, setIsSavingToNotion] = useState(false);
+  const [notionSaved, setNotionSaved] = useState(article.notionSaved);
 
-  function handleNotionSave() {
-    setNotionMessage("Notion 저장 기능은 준비 중입니다.");
+  async function handleNotionSave() {
+    setIsSavingToNotion(true);
+    setNotionMessage(null);
+    try {
+      const res = await fetch("/api/news/notion-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ articleId: article.id }),
+      });
+      if (!res.ok) {
+        throw new Error("Notion 저장에 실패했습니다.");
+      }
+      setNotionSaved(true);
+      router.refresh();
+    } catch (err) {
+      setNotionMessage(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setIsSavingToNotion(false);
+    }
   }
 
   return (
@@ -174,21 +194,22 @@ function ArticleCard({ article }: { article: Article }) {
           {notionMessage && (
             <span className="text-xs text-neutral-500">{notionMessage}</span>
           )}
-          {article.notionSaved ? (
+          {notionSaved ? (
             <button
               type="button"
               disabled
               className="rounded-md px-3 py-1.5 text-sm font-medium border border-neutral-200 dark:border-neutral-800 text-green-600 dark:text-green-500 cursor-not-allowed"
             >
-              Notion 저장됨
+              저장됨
             </button>
           ) : (
             <button
               type="button"
               onClick={handleNotionSave}
-              className="rounded-md px-3 py-1.5 text-sm font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              disabled={isSavingToNotion}
+              className="rounded-md px-3 py-1.5 text-sm font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Notion 저장
+              {isSavingToNotion ? "저장 중..." : "Notion 저장"}
             </button>
           )}
         </div>
