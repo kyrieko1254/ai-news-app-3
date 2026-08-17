@@ -30,15 +30,21 @@ export function DashboardClient({
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all">("all");
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchSummary, setFetchSummary] = useState<string | null>(null);
 
   async function handleFetchNews() {
     setIsFetching(true);
     setFetchError(null);
+    setFetchSummary(null);
     try {
       const res = await fetch("/api/news/fetch", { method: "POST" });
       if (!res.ok) {
         throw new Error("뉴스 가져오기에 실패했습니다.");
       }
+      const result: { savedCount: number; skippedCount: number } = await res.json();
+      setFetchSummary(
+        `새 기사 ${result.savedCount}건 저장${result.skippedCount > 0 ? `, ${result.skippedCount}건 처리 실패로 건너뜀` : ""}`,
+      );
       router.refresh();
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
@@ -60,6 +66,9 @@ export function DashboardClient({
           <h1 className="text-xl font-semibold text-foreground">AI 뉴스 수집기</h1>
           <div className="flex items-center gap-3">
             {fetchError && <span className="text-sm text-red-600">{fetchError}</span>}
+            {fetchSummary && !fetchError && (
+              <span className="text-sm text-neutral-500">{fetchSummary}</span>
+            )}
             <button
               type="button"
               onClick={handleFetchNews}
@@ -126,6 +135,12 @@ export function DashboardClient({
 }
 
 function ArticleCard({ article }: { article: Article }) {
+  const [notionMessage, setNotionMessage] = useState<string | null>(null);
+
+  function handleNotionSave() {
+    setNotionMessage("Notion 저장 기능은 준비 중입니다.");
+  }
+
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
@@ -156,13 +171,9 @@ function ArticleCard({ article }: { article: Article }) {
           원문보기
         </a>
         <div className="ml-auto flex items-center gap-2">
-          <button
-            type="button"
-            disabled
-            className="rounded-md px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-green-600 dark:text-green-500 cursor-not-allowed"
-          >
-            저장됨
-          </button>
+          {notionMessage && (
+            <span className="text-xs text-neutral-500">{notionMessage}</span>
+          )}
           {article.notionSaved ? (
             <button
               type="button"
@@ -174,6 +185,7 @@ function ArticleCard({ article }: { article: Article }) {
           ) : (
             <button
               type="button"
+              onClick={handleNotionSave}
               className="rounded-md px-3 py-1.5 text-sm font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
             >
               Notion 저장
