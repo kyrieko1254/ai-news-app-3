@@ -31,6 +31,18 @@ export function DashboardClient({
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fetchSummary, setFetchSummary] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  function handleSearch() {
+    setSearchKeyword(searchInput.trim());
+  }
+
+  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  }
 
   async function handleFetchNews() {
     setIsFetching(true);
@@ -54,9 +66,20 @@ export function DashboardClient({
   }
 
   const filteredArticles = useMemo(() => {
-    if (selectedCategoryId === "all") return articles;
-    return articles.filter((article) => article.categoryId === selectedCategoryId);
-  }, [articles, selectedCategoryId]);
+    let result = articles;
+    if (selectedCategoryId !== "all") {
+      result = result.filter((article) => article.categoryId === selectedCategoryId);
+    }
+    if (searchKeyword) {
+      const keyword = searchKeyword.toLowerCase();
+      result = result.filter(
+        (article) =>
+          article.titleKo.toLowerCase().includes(keyword) ||
+          article.summaryKo.toLowerCase().includes(keyword),
+      );
+    }
+    return result;
+  }, [articles, selectedCategoryId, searchKeyword]);
 
   return (
     <div className="min-h-full bg-background">
@@ -80,47 +103,69 @@ export function DashboardClient({
           </div>
         </header>
 
-        {/* 카테고리 바 */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <button
-            type="button"
-            onClick={() => setSelectedCategoryId("all")}
-            className={
-              selectedCategoryId === "all"
-                ? "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white"
-                : "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
-            }
-          >
-            전체
-          </button>
-          {categories.map((category) => (
+        {/* 카테고리 바 + 키워드 검색 */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
-              key={category.id}
               type="button"
-              onClick={() => setSelectedCategoryId(category.id)}
+              onClick={() => setSelectedCategoryId("all")}
               className={
-                selectedCategoryId === category.id
+                selectedCategoryId === "all"
                   ? "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white"
                   : "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
               }
             >
-              {category.name}
+              전체
             </button>
-          ))}
-          <button
-            type="button"
-            className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium border border-dashed border-neutral-300 dark:border-neutral-700 text-neutral-500 hover:border-indigo-500 hover:text-indigo-600"
-          >
-            <span aria-hidden="true">+</span> 카테고리 추가
-          </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setSelectedCategoryId(category.id)}
+                className={
+                  selectedCategoryId === category.id
+                    ? "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white"
+                    : "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                }
+              >
+                {category.name}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium border border-dashed border-neutral-300 dark:border-neutral-700 text-neutral-500 hover:border-indigo-500 hover:text-indigo-600"
+            >
+              <span aria-hidden="true">+</span> 카테고리 추가
+            </button>
+          </div>
+
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="키워드로 검색"
+              className="w-48 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-1.5 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="shrink-0 rounded-md bg-neutral-100 dark:bg-neutral-800/60 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+            >
+              검색
+            </button>
+          </div>
         </div>
 
         {/* 뉴스 카드 그리드 */}
         {filteredArticles.length === 0 ? (
           <p className="py-16 text-center text-sm text-neutral-500">
-            {selectedCategoryId === "all"
-              ? "저장된 뉴스가 없습니다."
-              : "이 카테고리에는 아직 뉴스가 없습니다."}
+            {searchKeyword
+              ? `'${searchKeyword}'에 대한 검색 결과가 없습니다.`
+              : selectedCategoryId === "all"
+                ? "저장된 뉴스가 없습니다."
+                : "이 카테고리에는 아직 뉴스가 없습니다."}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
