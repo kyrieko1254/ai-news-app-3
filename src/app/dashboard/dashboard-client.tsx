@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { articles as articlesTable, categories as categoriesTable } from "@/db/schema";
 
@@ -33,6 +33,15 @@ export function DashboardClient({
   const [fetchSummary, setFetchSummary] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [localArticles, setLocalArticles] = useState(articles);
+
+  useEffect(() => {
+    setLocalArticles(articles);
+  }, [articles]);
+
+  function handleArticleDeleted(articleId: number) {
+    setLocalArticles((prev) => prev.filter((article) => article.id !== articleId));
+  }
 
   function handleSearch() {
     setSearchKeyword(searchInput.trim());
@@ -66,7 +75,7 @@ export function DashboardClient({
   }
 
   const filteredArticles = useMemo(() => {
-    let result = articles;
+    let result = localArticles;
     if (selectedCategoryId !== "all") {
       result = result.filter((article) => article.categoryId === selectedCategoryId);
     }
@@ -79,7 +88,7 @@ export function DashboardClient({
       );
     }
     return result;
-  }, [articles, selectedCategoryId, searchKeyword]);
+  }, [localArticles, selectedCategoryId, searchKeyword]);
 
   return (
     <div className="min-h-full bg-background">
@@ -170,7 +179,7 @@ export function DashboardClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
+              <ArticleCard key={article.id} article={article} onDeleted={handleArticleDeleted} />
             ))}
           </div>
         )}
@@ -179,11 +188,36 @@ export function DashboardClient({
   );
 }
 
-function ArticleCard({ article }: { article: Article }) {
+function ArticleCard({
+  article,
+  onDeleted,
+}: {
+  article: Article;
+  onDeleted: (articleId: number) => void;
+}) {
   const router = useRouter();
   const [notionMessage, setNotionMessage] = useState<string | null>(null);
   const [isSavingToNotion, setIsSavingToNotion] = useState(false);
   const [notionSaved, setNotionSaved] = useState(article.notionSaved);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDelete() {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/news/${article.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        throw new Error("삭제에 실패했습니다.");
+      }
+      onDeleted(article.id);
+      router.refresh();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setIsDeleting(false);
+    }
+  }
 
   async function handleNotionSave() {
     setIsSavingToNotion(true);
@@ -207,8 +241,19 @@ function ArticleCard({ article }: { article: Article }) {
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm">
-      <div className="flex items-center justify-between gap-2">
+    <article className="relative flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm">
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={isDeleting}
+        aria-label="뉴스 삭제"
+        title="삭제"
+        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
+
+      <div className="flex items-center justify-between gap-2 pr-6">
         <span className="rounded-full bg-neutral-100 dark:bg-neutral-800/60 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-neutral-400">
           {article.category?.name ?? "미분류"}
         </span>
@@ -217,6 +262,7 @@ function ArticleCard({ article }: { article: Article }) {
           {article.publishedAt ? ` · ${formatDate(article.publishedAt)}` : ""}
         </span>
       </div>
+      {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
 
       <h3 className="text-base font-semibold leading-snug text-foreground">
         {article.titleKo}
