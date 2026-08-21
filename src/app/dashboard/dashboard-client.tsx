@@ -303,23 +303,23 @@ function ArticleCard({
   }
 
   return (
-    <article className="relative flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm">
+    <article className="group relative flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-md">
       <button
         type="button"
         onClick={handleDelete}
         disabled={isDeleting}
         aria-label="뉴스 삭제"
         title="삭제"
-        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-neutral-100 hover:text-neutral-700 focus-visible:opacity-100 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <span aria-hidden="true">✕</span>
       </button>
 
       <div className="flex items-center justify-between gap-2 pr-6">
-        <span className="rounded-full bg-neutral-100 dark:bg-neutral-800/60 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+        <span className="rounded-full bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-400">
           {article.category?.name ?? '미분류'}
         </span>
-        <span className="shrink-0 text-xs text-neutral-500">
+        <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-500">
           {article.sourceName}
           {article.publishedAt ? ` · ${formatDate(article.publishedAt)}` : ''}
         </span>
@@ -328,7 +328,7 @@ function ArticleCard({
         <span className="text-xs text-red-600">{deleteError}</span>
       )}
 
-      <h3 className="text-base font-semibold leading-snug text-foreground">
+      <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
         {article.titleKo}
       </h3>
 
@@ -336,12 +336,12 @@ function ArticleCard({
         {article.summaryKo}
       </p>
 
-      <div className="mt-1 flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+      <div className="mt-1 flex items-center gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
         <a
           href={article.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+          className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline underline-offset-2"
         >
           원문보기
         </a>
