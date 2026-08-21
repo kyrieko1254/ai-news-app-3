@@ -12,6 +12,9 @@ type Article = typeof articlesTable.$inferSelect & {
   category: Category | null;
 };
 
+// 뉴스 가져오는 중 표시할 스켈레톤 카드 개수
+const SKELETON_CARD_COUNT = 6;
+
 function formatDate(date: Date | string | null) {
   if (!date) return '';
   const d = new Date(date);
@@ -189,7 +192,13 @@ export function DashboardClient({
         </div>
 
         {/* 뉴스 카드 그리드 */}
-        {filteredArticles.length === 0 ? (
+        {isFetching ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: SKELETON_CARD_COUNT }).map((_, i) => (
+              <ArticleCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : filteredArticles.length === 0 ? (
           <p className="py-16 text-center text-sm text-neutral-500">
             {searchKeyword
               ? `'${searchKeyword}'에 대한 검색 결과가 없습니다.`
@@ -208,6 +217,30 @@ export function DashboardClient({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ArticleCardSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex flex-col gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm animate-pulse"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="h-5 w-16 rounded-full bg-neutral-100 dark:bg-neutral-800/60" />
+        <div className="h-3 w-24 rounded bg-neutral-100 dark:bg-neutral-800/60" />
+      </div>
+      <div className="h-4 w-4/5 rounded bg-neutral-100 dark:bg-neutral-800/60" />
+      <div className="space-y-2">
+        <div className="h-3 w-full rounded bg-neutral-100 dark:bg-neutral-800/60" />
+        <div className="h-3 w-full rounded bg-neutral-100 dark:bg-neutral-800/60" />
+        <div className="h-3 w-2/3 rounded bg-neutral-100 dark:bg-neutral-800/60" />
+      </div>
+      <div className="mt-1 flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="h-4 w-16 rounded bg-neutral-100 dark:bg-neutral-800/60" />
+        <div className="ml-auto h-8 w-20 rounded-md bg-neutral-100 dark:bg-neutral-800/60" />
       </div>
     </div>
   );
