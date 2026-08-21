@@ -1,8 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { articles as articlesTable, categories as categoriesTable } from "@/db/schema";
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type {
+  articles as articlesTable,
+  categories as categoriesTable,
+} from '@/db/schema';
 
 type Category = typeof categoriesTable.$inferSelect;
 type Article = typeof articlesTable.$inferSelect & {
@@ -10,12 +13,12 @@ type Article = typeof articlesTable.$inferSelect & {
 };
 
 function formatDate(date: Date | string | null) {
-  if (!date) return "";
+  if (!date) return '';
   const d = new Date(date);
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  return d.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -27,12 +30,14 @@ export function DashboardClient({
   categories: Category[];
 }) {
   const router = useRouter();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all">("all");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | 'all'>(
+    'all',
+  );
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fetchSummary, setFetchSummary] = useState<string | null>(null);
-  const [searchInput, setSearchInput] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchInput, setSearchInput] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [localArticles, setLocalArticles] = useState(articles);
 
   useEffect(() => {
@@ -40,7 +45,9 @@ export function DashboardClient({
   }, [articles]);
 
   function handleArticleDeleted(articleId: number) {
-    setLocalArticles((prev) => prev.filter((article) => article.id !== articleId));
+    setLocalArticles((prev) =>
+      prev.filter((article) => article.id !== articleId),
+    );
   }
 
   function handleSearch() {
@@ -48,7 +55,7 @@ export function DashboardClient({
   }
 
   function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSearch();
     }
   }
@@ -58,17 +65,20 @@ export function DashboardClient({
     setFetchError(null);
     setFetchSummary(null);
     try {
-      const res = await fetch("/api/news/fetch", { method: "POST" });
+      const res = await fetch('/api/news/fetch', { method: 'POST' });
       if (!res.ok) {
-        throw new Error("뉴스 가져오기에 실패했습니다.");
+        throw new Error('뉴스 가져오기에 실패했습니다.');
       }
-      const result: { savedCount: number; skippedCount: number } = await res.json();
+      const result: { savedCount: number; skippedCount: number } =
+        await res.json();
       setFetchSummary(
-        `새 기사 ${result.savedCount}건 저장${result.skippedCount > 0 ? `, ${result.skippedCount}건 처리 실패로 건너뜀` : ""}`,
+        `새 기사 ${result.savedCount}건 저장${result.skippedCount > 0 ? `, ${result.skippedCount}건 처리 실패로 건너뜀` : ''}`,
       );
       router.refresh();
     } catch (err) {
-      setFetchError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setFetchError(
+        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.',
+      );
     } finally {
       setIsFetching(false);
     }
@@ -76,8 +86,10 @@ export function DashboardClient({
 
   const filteredArticles = useMemo(() => {
     let result = localArticles;
-    if (selectedCategoryId !== "all") {
-      result = result.filter((article) => article.categoryId === selectedCategoryId);
+    if (selectedCategoryId !== 'all') {
+      result = result.filter(
+        (article) => article.categoryId === selectedCategoryId,
+      );
     }
     if (searchKeyword) {
       const keyword = searchKeyword.toLowerCase();
@@ -95,9 +107,18 @@ export function DashboardClient({
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* 헤더 */}
         <header className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4">
-          <h1 className="text-xl font-semibold text-foreground">AI 뉴스 수집기</h1>
           <div className="flex items-center gap-3">
-            {fetchError && <span className="text-sm text-red-600">{fetchError}</span>}
+            <h1 className="text-xl font-semibold text-foreground">
+              AI 뉴스 수집기
+            </h1>
+            <span className="rounded-full bg-neutral-100 dark:bg-neutral-800/60 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+              총 {localArticles.length}개의 뉴스
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            {fetchError && (
+              <span className="text-sm text-red-600">{fetchError}</span>
+            )}
             {fetchSummary && !fetchError && (
               <span className="text-sm text-neutral-500">{fetchSummary}</span>
             )}
@@ -107,7 +128,7 @@ export function DashboardClient({
               disabled={isFetching}
               className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isFetching ? "가져오는 중..." : "뉴스 가져오기"}
+              {isFetching ? '가져오는 중...' : '뉴스 가져오기'}
             </button>
           </div>
         </header>
@@ -117,11 +138,11 @@ export function DashboardClient({
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               type="button"
-              onClick={() => setSelectedCategoryId("all")}
+              onClick={() => setSelectedCategoryId('all')}
               className={
-                selectedCategoryId === "all"
-                  ? "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white"
-                  : "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                selectedCategoryId === 'all'
+                  ? 'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white'
+                  : 'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800'
               }
             >
               전체
@@ -133,8 +154,8 @@ export function DashboardClient({
                 onClick={() => setSelectedCategoryId(category.id)}
                 className={
                   selectedCategoryId === category.id
-                    ? "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white"
-                    : "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                    ? 'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white'
+                    : 'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                 }
               >
                 {category.name}
@@ -172,14 +193,18 @@ export function DashboardClient({
           <p className="py-16 text-center text-sm text-neutral-500">
             {searchKeyword
               ? `'${searchKeyword}'에 대한 검색 결과가 없습니다.`
-              : selectedCategoryId === "all"
-                ? "저장된 뉴스가 없습니다."
-                : "이 카테고리에는 아직 뉴스가 없습니다."}
+              : selectedCategoryId === 'all'
+                ? '저장된 뉴스가 없습니다.'
+                : '이 카테고리에는 아직 뉴스가 없습니다.'}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} onDeleted={handleArticleDeleted} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                onDeleted={handleArticleDeleted}
+              />
             ))}
           </div>
         )}
@@ -207,14 +232,16 @@ function ArticleCard({
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      const res = await fetch(`/api/news/${article.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/news/${article.id}`, { method: 'DELETE' });
       if (!res.ok) {
-        throw new Error("삭제에 실패했습니다.");
+        throw new Error('삭제에 실패했습니다.');
       }
       onDeleted(article.id);
       router.refresh();
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setDeleteError(
+        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.',
+      );
       setIsDeleting(false);
     }
   }
@@ -223,18 +250,20 @@ function ArticleCard({
     setIsSavingToNotion(true);
     setNotionMessage(null);
     try {
-      const res = await fetch("/api/news/notion-save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/news/notion-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId: article.id }),
       });
       if (!res.ok) {
-        throw new Error("Notion 저장에 실패했습니다.");
+        throw new Error('Notion 저장에 실패했습니다.');
       }
       setNotionSaved(true);
       router.refresh();
     } catch (err) {
-      setNotionMessage(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      setNotionMessage(
+        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.',
+      );
     } finally {
       setIsSavingToNotion(false);
     }
@@ -255,14 +284,16 @@ function ArticleCard({
 
       <div className="flex items-center justify-between gap-2 pr-6">
         <span className="rounded-full bg-neutral-100 dark:bg-neutral-800/60 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-          {article.category?.name ?? "미분류"}
+          {article.category?.name ?? '미분류'}
         </span>
         <span className="shrink-0 text-xs text-neutral-500">
           {article.sourceName}
-          {article.publishedAt ? ` · ${formatDate(article.publishedAt)}` : ""}
+          {article.publishedAt ? ` · ${formatDate(article.publishedAt)}` : ''}
         </span>
       </div>
-      {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
+      {deleteError && (
+        <span className="text-xs text-red-600">{deleteError}</span>
+      )}
 
       <h3 className="text-base font-semibold leading-snug text-foreground">
         {article.titleKo}
@@ -300,7 +331,7 @@ function ArticleCard({
               disabled={isSavingToNotion}
               className="rounded-md px-3 py-1.5 text-sm font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSavingToNotion ? "저장 중..." : "Notion 저장"}
+              {isSavingToNotion ? '저장 중...' : 'Notion 저장'}
             </button>
           )}
         </div>
