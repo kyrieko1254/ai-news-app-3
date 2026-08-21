@@ -45,3 +45,8 @@ npm run db:studio    # Drizzle Studio 실행
 아직 테스트 러너는 설정되어 있지 않습니다.
 
 Import alias: `@/*` → `./src/*`.
+
+## 사용한 플러그인
+
+- Frontend Design: UI 디자인 품질 향상
+- commit-commands: 깃 워크플로우 자동화
