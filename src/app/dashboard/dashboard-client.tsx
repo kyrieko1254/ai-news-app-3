@@ -220,6 +220,13 @@ export function DashboardClient({
           </div>
         )}
       </div>
+
+      {/* 푸터 */}
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-6">
+        <p className="text-center text-xs text-neutral-500 dark:text-neutral-500">
+          Copyright 2026 AI 뉴스 수집기. Powered by Claude.
+        </p>
+      </footer>
     </div>
   );
 }
