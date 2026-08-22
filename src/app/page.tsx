@@ -1,12 +1,5 @@
-import { UserButton } from "@clerk/nextjs";
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-center gap-4 py-32 px-16">
-        <UserButton />
-        <p className="text-black dark:text-zinc-50">로그인되었습니다.</p>
-      </main>
-    </div>
-  );
+  redirect('/dashboard');
 }

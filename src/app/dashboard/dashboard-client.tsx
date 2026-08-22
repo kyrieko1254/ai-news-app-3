@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { UserButton } from '@clerk/nextjs';
 import type {
   articles as articlesTable,
   categories as categoriesTable,
@@ -133,6 +134,7 @@ export function DashboardClient({
             >
               {isFetching ? '가져오는 중...' : '뉴스 가져오기'}
             </button>
+            <UserButton />
           </div>
         </header>
 
